@@ -5,7 +5,7 @@ DEPS=
 CC=g++
 LD=ld
 
-CPPFLAGS= -Wall -std=c++20 -O
+CPPFLAGS= -Wall -std=c++20 -O1
 LINKFLAGS=
 
 PREFIX=/usr/bin

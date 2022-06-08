@@ -6,11 +6,11 @@
 
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <iostream>
 #include <iomanip>
-#include <getopt.h>
-
+#include <array>
 
 
 void fillw::getHelp() 
@@ -18,227 +18,270 @@ void fillw::getHelp()
 	using std::wcout, std::left, std::setw;
 
 	wcout
-	<< "usage: fillwan [options]\n" 
+	<< "usage: fillwan [options] [file]\n" 
+	<< "reads from standard input if no file is provided\n\n"
 	<< "options:\n" << left
-	<< setw(25) << "-h | --help" 			<< "display this help\n"
-	<< setw(25) << "-l | --lang (EN | DE)" 	<< "language selection. Default: EN\n"
-	<< setw(25) << "-c | --color"  			<< "colored output\n"
-	<< setw(25) << "-s | --sentences" 		<< "print sentences with occurrences\n"
-	<< setw(25) << "-a | --alpha "			<< "sort occurrence map alphabetically, not by count\n";
+	<< setw(25) << "-h | --help" 		   << "display this help\n"
+	<< setw(25) << "-l | --lang (EN | DE)" << "language selection. English or German. Default: EN\n"
+	<< setw(25) << "-c | --color"  		   << "enable colored output\n"
+	<< setw(25) << "-d | --dump"	 	   << "dump text with highlighted fill expressions\n"
+	<< setw(25) << "-a | --alpha "		   << "sort occurrence map alphabetically, not by count\n";
 }
 
 
 void fillw::setOptions(int argc, char** argv, options &opt) 
 {
+	// we could use getopt.h for POSIX systems instead, but this would made it platform dependent
 
-	int c = 0,
-		option_index = 0;
-	std::string lang;
+	std::string lang, par;
 
 	// default parameters
-	opt.print_sent 	= false;
+	opt.dump 		= false;
 	opt.sort_occur 	= true;
 	opt.color 		= false;
 	opt.help_only	= false;
+	opt.path		= "";
 	opt.word_list 	= &word_list_en;
 
-	// list for available options
- 	option long_options[] = 
+	std::vector<std::string> args;
+
+	// this parts creates the args vector and expands parameters like -sc to -s -c
+	for (int i = 1; i < argc; i++)
 	{
-		{"help", 		no_argument, 		 0, 'h'},
-		{"color", 		no_argument, 		 0, 'c'},
-		{"sentences", 	no_argument, 		 0, 's'},
-		{"alpha", 		no_argument, 		 0, 'a'},
-		{"lang", 		required_argument, 	 0, 'l'},
-	};
+		par = std::string(argv[i]);
 
-
-	for (;;) 
-	{
-		// read next parameter
-		c = getopt_long(argc, argv, "l:csah", long_options, &option_index);
-
-		// handle parameter
-		switch(c) 
-		{
-			case -1: 							return;
-			case  0:							break;
-			case 'c': opt.color = true; 		break;
-			case 's': opt.print_sent = true; 	break;
-			case 'a': opt.sort_occur = false;	break;
-
-			case 'l':
-				lang = std::string(optarg);
-
-				for (auto &c : lang)
-					c = std::tolower(c);
-
-				if (lang == "de")			opt.word_list = &fillw::word_list_de;
-				else if (lang == "en")		opt.word_list = &fillw::word_list_en;
-				else						throw std::invalid_argument("Invalid language");
-
-				break;
-
-			default: // -h for help or invalid parameter 
-				fillw::getHelp();
-				opt.help_only = true;
-		}
+		if (par[0] == '-' && par.length() > 2 && par[1] != '-')
+			for (size_t j = 1; j < par.length(); j++)
+				args.push_back(std::string("-") + par[j]);
+		else
+			args.push_back(par);
 	}
+
+	// set options depending on args
+	for (size_t i = 0; i < args.size(); i++)
+	{
+		par = args[i];
+
+		if (par == "--alpha" || par == "-a")
+			opt.sort_occur = false;
+
+		else if (par == "--dump" || par == "-d")
+			opt.dump = true;
+		
+		else if (par == "--color" || par == "-c")
+			opt.color = true;
+
+		else if (par == "--help" || par == "-h")
+		{
+			fillw::getHelp();
+			opt.help_only = true;
+		}
+		else if (par == "--lang" || par == "-l")
+		{
+			if (i == size_t(args.size() - 1))
+				throw std::runtime_error("Language parameter missing.");
+
+			lang = args[++i];
+
+			// enfore lower case
+			std::transform(lang.begin(), lang.end(), lang.begin(), [](auto c){ return std::towlower(c); });
+
+			if (lang == "de")			opt.word_list = &fillw::word_list_de;
+			else if (lang == "en")		opt.word_list = &fillw::word_list_en;
+			else						throw std::invalid_argument("Invalid language '" + lang + "'.");
+		}
+		else if (i == args.size() - 1)
+			opt.path = args[i];
+		else
+			throw std::invalid_argument(par);
+	}
+
+	// assign output sequences
+	HIGHLIGHT_SEQ_CLOSE = (opt.color)?  RESET_SEQ_ANSI: 		RESET_SEQ_NON_ANSI;
+	HIGHLIGHT_SEQ_OPEN 	= (opt.color)?  HIGHLIGHT_SEQ_ANSI: 	HIGHLIGHT_SEQ_NON_ANSI;
+	SIGNAL_SEQ_OPEN 	= (opt.color)?  SIGNAL_SEQ_ANSI_OPEN: 	SIGNAL_SEQ_NON_ANSI_OPEN;
+	SIGNAL_SEQ_CLOSE    = (opt.color)?  SIGNAL_SEQ_ANSI_CLOSE: 	SIGNAL_SEQ_NON_ANSI_CLOSE;
+
 }
 
 
-void fillw::getOccurrences(const std::wstring &data, fillw::word_list_type *word_list,
-						   fillw::statistics &stats, fillw::sentence_output &sout)
+void fillw::getOccurrences(const std::wstring &data, const fillw::options &opt,
+						   fillw::statistics &stats, std::wostringstream &sout)
 {
 	using std::wstring, std::find_if, std::find_if_not, std::reverse_iterator;
 				
-	bool prem_break, // premature break, punctuation mark ends the sentence
-		 sent_add; // flag for when sentence ends in this iteration 
+	bool prem_break; // premature break, punctuation mark ends the sentence
 
-	size_t dot_fw, dot_bw, word_start, start_wd, end_wd;
+	size_t ws_e, word_start, word_end, start_wd, end_wd;
 
 	std::vector<size_t> ws_pos;
-	std::wstring sent, word;
+	std::wstring_view sent, word;
+	std::wstring word_s;
 
+	// pre-reserve for speedup. a whitespace every 5 chars is a guess
+	ws_pos.reserve(size_t(data.length()/5));
 
-	// store position of whitespaces
-    for(size_t pos = 0; pos != wstring::npos; pos = data.find(L' ', pos+1))
+	if (!std::iswspace(data.at(0)))
+		ws_pos.push_back(0);
+
+    for(size_t pos = 0; pos < data.length(); pos++)
+	{
+		pos = std::find_if(data.begin()+pos, data.end(), std::iswspace) - data.begin();
 		ws_pos.push_back(pos);
+		pos = std::find_if_not(data.begin()+pos, data.end(), std::iswspace) - data.begin();
+	}
 
+	if (!std::iswspace(data.at(data.length()-1)))
+		ws_pos.push_back(data.length());
+	
 	// init stats
 	stats.fill_count = 0; 
-	stats.sentence_num = 0; 
-	stats.word_count = ws_pos.size()-1;
-	
+	stats.word_count = 0;
 
-	for(size_t i = 0, j = 0; i < ws_pos.size()-1; i++)
+	bool succ = false;
+
+	for(size_t i = 0; i < ws_pos.size()-1; i++)
 	{
-		j = 0;
 		prem_break = false;
-		sent_add = false;
+		succ = false;
 
-		for(auto &wn : *word_list)
+		ws_e = std::find_if_not(data.begin()+ws_pos.at(i), data.end(), std::iswspace) - data.begin();
+		start_wd = std::find_if_not(data.begin()+ws_e, data.begin()+ws_pos.at(i+1), ::iswpunct) - data.begin();
+
+		if (start_wd < ws_pos.at(i+1))
 		{
-			if (i+j+1 >= ws_pos.size() || prem_break)
-				break;
-
-			word = data.substr(ws_pos.at(i)+1, ws_pos.at(i+j+1)-ws_pos.at(i)-1);
-
-			// increment sentence number if last word before sentence (j=0)
-			// and sentence ending punctuation mark in word
-			if ((j == 0 && word.find_last_of(punctuation_sent) != wstring::npos)
-					|| (j == 0 && i+1 == ws_pos.size()-1))
+			for(size_t j = 0; j < opt.word_list->size(); j++)
 			{
-				sent_add = true;
-				stats.sentence_num++;
-			}
+				if (i+j+1 >= ws_pos.size() || prem_break)
+					break;
+
+				word = std::wstring_view(data).substr(start_wd, ws_pos.at(i+j+1)-start_wd);
+
+				// exclude punctuation marks at the end of the word
+				auto end_it = find_if_not(reverse_iterator(word.end()), 
+										  reverse_iterator(word.begin()), ::iswpunct);
+				end_wd = word.length() - (end_it - reverse_iterator(word.end()));
 			
-			// exclude punctuation marks at the end of the word
-			auto end_it = find_if_not(reverse_iterator(word.end()), 
-									  reverse_iterator(word.begin()), ::iswpunct);
-			end_wd = word.length() - (end_it - reverse_iterator(word.end()));
-			
-			if (end_wd != word.length()){
-				// exclude mark, exit loop on next iteration
-				word = word.substr(0, end_wd);
-				prem_break = true;
-			}
-			else if (end_wd == 0)
-				break;
-
-			// exclude punctuation marks at the start of the word
-			start_wd = find_if_not(word.begin(), word.end(), ::iswpunct) - word.begin();
-
-			if (start_wd == word.length())
-				break;
-			else if (start_wd != 0)
-				word = word.substr(start_wd, word.length() - start_wd + 1);
-			
-			auto it = wn.find(word);
-
-			if (it != wn.end())
-			{
-				if (stats.occurrences.find(*it) != stats.occurrences.end())
-					stats.occurrences.at(*it)++;
-				else
-					stats.occurrences.emplace(*it, 1);
-
-
-				if (sout.active)
-				{
-					// find sentence ending and beginning. Add -1 to search radius
-					// to include punctuation mark belonging appended/prepended to word
-					dot_fw = data.find_first_of(punctuation_sent, ws_pos.at(i+j+1)-1);
-					dot_fw = data.find_first_not_of(punctuation_sent, dot_fw);
-					dot_bw = data.find_last_of(punctuation_sent, ws_pos.at(i));
-				
-					// handle npos
-					dot_bw = (dot_bw == wstring::npos)? 0: 				dot_bw+1;
-					dot_fw = (dot_fw == wstring::npos)? data.length():	dot_fw;
-
-					// extract sentence	
-					sent = data.substr(dot_bw, dot_fw-dot_bw+1);
-
-					// insert signaling around word
-					word_start = ws_pos.at(i) + 1 - dot_bw + start_wd; 
-					sent.insert(word_start + it->length(), SIGNAL_SEQ_CLOSE);
-					sent.insert(word_start, SIGNAL_SEQ_OPEN);
-				
-					// print sentence to stringstream. Subtract sent_add in index,
-					// since the sentence number was incremented in this iteration
-					sout.sentences << HIGHLIGHT_SEQ_OPEN << "Line " 
-						<< stats.sentence_lines.at(stats.sentence_num - sent_add) << ": "
-						<< HIGHLIGHT_SEQ_CLOSE << sent << "\n\n";
+				if (end_wd != word.length()){
+					// exclude mark, exit loop on next iteration
+					word = word.substr(0, end_wd);
+					prem_break = true;
 				}
+				else if (end_wd == 0)
+					break;
 
-				i += j; // skip search for next words, since they already belong 
-						// to a fill word expression
-				stats.fill_count++;
-				break;
+				word_s = std::wstring(word);
+				std::replace_if(word_s.begin(), word_s.end(), ::iswspace, L' ');
+				auto I = unique(word_s.begin(), word_s.end(), 
+								[](auto& lhs, auto& rhs){ return lhs == L' ' && lhs == rhs; } );
+				word_s.erase(I, word_s.end());
+
+				auto &wn = opt.word_list->at(j);
+				auto it = wn.find(word_s);
+
+				// first word iteration, add word count
+				// on the way we excluded cases where there are only punctuation marks between whitespaes
+				if (j == 0) 
+					stats.word_count++;
+
+				if (it != wn.end())
+				{
+					if (stats.occurrences.find(*it) != stats.occurrences.end())
+						stats.occurrences.at(*it)++;
+					else
+						stats.occurrences.emplace(*it, 1);
+
+					if (opt.dump)
+					{
+						word_start = start_wd;
+						word_end = start_wd + end_wd;
+
+						sout << std::wstring_view(data).substr(ws_pos.at(i), word_start-(ws_pos.at(i)))
+							 << SIGNAL_SEQ_OPEN 
+							 << std::wstring_view(data).substr(word_start, word_end-word_start)
+							 << SIGNAL_SEQ_CLOSE 
+							 << std::wstring_view(data).substr(word_end, ws_pos.at(i+j+1)-word_end);
+					}
+
+
+					i += j; // skip search for next words, since they already belong 
+							// to a fill word expression
+					stats.fill_count++;
+					stats.word_count += j; // add skipped words to word count
+					succ = true;
+					break;
+				}
 			}
-
-			j++;
 		}
+		if (!succ && opt.dump)
+			sout << std::wstring_view(data).substr(ws_pos.at(i), ws_pos.at(i+1)-ws_pos.at(i)); 
 	}
+	if (opt.dump)
+		sout << std::wstring_view(data).substr(ws_pos.at(ws_pos.size()-2), data.length()); 
 }
 
 
-void fillw::getSentenceLines(const std::wstring &data, fillw::statistics &stats)
+int fillw::getText(const options &opt, std::wstring &text)
 {
-	using std::find_if, std::count, std::find_if_not, std::wstring;
-
-	auto next = data.begin();
-	size_t sentend_pos = 0;
-
-	stats.lines = 0;
-
-	for(auto pos = data.begin(); pos < data.end(); pos = next)
+	// exit if not connected to a pipe
+	if (opt.path == "" && !fillw::inPipe())
 	{
-		sentend_pos = data.find_first_of(punctuation_sent, pos-data.begin());
+		std::wcerr << "Pipe text into this program or specify a file path." << std::endl;
+		return 1;
+	}
+	else
+	{
+		FILE * file;
 
-		if (sentend_pos != wstring::npos)
+		if (opt.path != "")
 		{
-			// store sentence line
-			stats.sentence_lines.push_back(stats.lines+1);
-			
-			// find sentence ending and start of next sentence
-			auto sentend = data.begin() + sentend_pos;
-			sentend = find_if(sentend, data.end(), ::iswspace);
-			next = find_if_not(sentend, data.end(), ::iswspace);
-			
-			// count lines in sentence
-			stats.lines += count(pos, next, L'\n');
+ 			file =  fopen(opt.path.c_str(), "r");
+			if (file == NULL)
+			{
+				std::wcerr << "File Not Found";
+				return -1;
+			}
 		}
-		else 
-		{
-			auto last_ch = find_if_not(pos, data.end(), ::iswspace);
-			if (last_ch != data.end())
-				stats.sentence_lines.push_back(stats.lines+1);
+		else
+			file = stdin;
 
-			// count lines to the end
-			stats.lines += count(pos, data.end(), L'\n');
-			return;
+		// buffered read is much faster than getline etc.
+		std::array<wchar_t, 2 << 12> buffer;
+		while(fgetws(buffer.data(), buffer.size(), file) != NULL)
+			text.append(buffer.data());
+	}
+	return 0;
+}
+
+
+size_t fillw::getLineCount(const std::wstring &data)
+{
+	size_t count = 0;
+	
+	for(auto &c : data)
+		if (c == L'\n')
+			count++;
+
+	return (count)? count: count + 1;
+}
+
+
+size_t fillw::getSentenceCount(const std::wstring &data)
+{
+	size_t pos=0, count=0;
+
+	while (pos < data.length())
+	{
+		if (pos > 0)
+			pos = std::find_if(data.begin()+pos, data.end(), std::iswspace) - data.begin();
+		pos = std::find_if(data.begin()+pos, data.end(), std::iswalnum) - data.begin();
+
+		if (pos < data.length())
+		{
+			pos = data.find_first_of(punctuation_sent, pos);
+			count++;
 		}
 	}
+	return count;
 }
 

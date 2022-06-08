@@ -10,7 +10,7 @@ Outputs are a list of found words with occurence count as well as a sentence lis
 
 A list of analyzed categories with examples can be found below.
 
-* first person view (I, my, we, our, ...)
+* first person perspective (I, my, we, our, ...)
 * conjunctive (could, would, ...)
 * transition words (but, therefore)
 * colloquial terms (ok, nice, stuff, ...)
@@ -35,18 +35,29 @@ A list of analyzed categories with examples can be found below.
 
 ### Usage
 
-For word analysis the text needs to be piped into this tool.
-
-cat file.txt | fillwan
-
 The below program options are also displayed using the -h parameter.
 
-* -h --help 		Prints help
-* -l --lang 		Language selection. Options are EN (English, default value) and DE (German)
-* -c --color 		Enable colored output
-* -s --sentences 	Print a sentence list to word occurences
-* -a --alpha 		Sort occurence map alphabetically. Default sorting is by occurrence count.
+```
+usage: fillwan [options] [file]
+reads from standard input if no file is provided
 
+options:
+-h | --help              display this help
+-l | --lang (EN | DE)    language selection. English or German. Default: EN
+-c | --color             enable colored output
+-d | --dump              dump text with highlighted fill expressions
+-a | --alpha             sort occurrence map alphabetically, not by count
+```
+
+Scroll through the text with the expressions being highlighted
+```
+cat text.txt | fillwan -cd | less -RN
+```
+
+Print all lines containing fill expressions with line numbers
+```
+cat text.txt | fillwan -d | grep -ne "<<[^>]\+>>"
+```
 
 ### Building Instructions
 

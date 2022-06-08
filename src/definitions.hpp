@@ -2,25 +2,26 @@
 #define DEFINITIONS_HPP
 
 #include <string>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 
 
 // Definitions
+///////////////////////////////////////////////////////////////////////////////////////////////
 //
-// Line: Includes newline character. 
+// Line: 
+// Includes a newline character. 
 // Last line of file is excluded if it consists only of the \n character.
 //
-// Sentence: At least one whitespace + punctuation mark.
-// Special case at end of stream: character that is not whitespace 
-// or punctuation mark + end of file/stream
+// Sentence: 
+// whitespace on beginning + alphanumerical char somewhere after + punctuation mark or EOF.
 //
 // Word:
 // one or more alphanumerical characters between punctuation marks or whitespaces
 // 
-
 
 
 // Formatting Strings
@@ -36,7 +37,6 @@ constexpr std::wstring_view SIGNAL_SEQ_NON_ANSI_CLOSE = L">>";
 constexpr std::wstring_view SIGNAL_SEQ_ANSI_OPEN = 		L"\033[1;31m";
 constexpr std::wstring_view SIGNAL_SEQ_ANSI_CLOSE = 	L"\033[0m";
 
-
 constexpr std::wstring_view SEPARATOR = L"--------------------------------\n";
 
 constexpr std::wstring_view punctuation_sent = L".:;?!¿⁇⁉⁈‽⸘؟·჻";
@@ -50,42 +50,78 @@ inline std::wstring SIGNAL_SEQ_OPEN;
 inline std::wstring SIGNAL_SEQ_CLOSE;
 
 
+// needed for inPipe below
+#ifdef __unix__         
+#include <unistd.h>
+#elif defined(_WIN32) || defined(WIN32) 
+#include <io.h>
+#endif
 
 
 namespace fillw
 {
 
-
 	//// typedefs
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
-	// comparator for case independent comparison
-	inline auto caseless_cmp = [](const std::wstring& lhs, const std::wstring &rhs) -> bool
+	 //comparator for case independent comparison
+	inline auto caseless_less = [](const std::wstring& lhs, const std::wstring &rhs) -> bool
 	{
 		for(size_t i = 0; i < lhs.length() && i < rhs.length(); i++)
-			if(std::towlower(lhs[i]) != std::towlower(rhs[i]))
+			if (std::towlower(lhs[i]) != std::towlower(rhs[i]))
 				return std::towlower(lhs[i]) < std::towlower(rhs[i]);
 
 		return (lhs.length() < rhs.length());
 	};
 
-	typedef decltype(caseless_cmp) cmp_decl;
+	inline auto caseless_hash = [](const std::wstring &expr) -> size_t
+	{
+		std::wstring expr2(expr);
 
-	typedef std::vector<std::pair<std::wstring, size_t>> 			output_map_type;
-	typedef std::map<std::wstring, size_t, cmp_decl> 				occur_map_type;
-	typedef const std::vector<std::set<std::wstring, cmp_decl>> 	word_list_type;
+		// convert to lower case. Most chars are a-z, so check this and don't convert
+		std::for_each(expr2.begin(), expr2.end(), [](auto &c){if (!(c <= L'z' && c >= L'a')) c = std::towlower(c);});
 
+		return std::hash<std::wstring>()(expr2);
+	};
+
+	inline auto caseless_equal = []( const std::wstring& lhs, const std::wstring& rhs) -> bool
+	{
+		return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
+						  [](auto & a, auto & b) { return a == b || std::towlower(a) == std::towlower(b);} );
+	};
+
+	typedef std::vector<std::pair<std::wstring, size_t>> 						output_map_type;
+	
+	typedef std::unordered_map<std::wstring, 
+							   size_t, 
+							   decltype(caseless_hash),
+							   decltype(caseless_equal)> 						occur_map_type;
+
+	typedef const std::vector<std::unordered_set<std::wstring, 
+												 decltype(caseless_hash),
+												 decltype(caseless_equal)>> 	word_list_type;
+
+
+	// InPipe Detection Function
+	///////////////////////////////////////////////////////////////////////////////////////////////
+
+	#ifdef __unix__         
+		inline auto inPipe = []() -> bool { return !isatty(fileno(stdin)); };
+	#elif defined(_WIN32) || defined(WIN32) 
+		inline auto inPipe = []() -> bool { return !_isatty(_fileno(stdin)); };
+	#endif
 
 	//// Structs
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
 	struct options
 	{
-		bool print_sent,
+		bool dump,
 			 sort_occur,
 			 color,
 			 help_only;
-
+		
+		std::string path;
 		fillw::word_list_type *word_list;
 	};
 
@@ -93,40 +129,33 @@ namespace fillw
 	{
 		size_t fill_count,
 			   word_count,
-			   sentence_num,
-			   org_length,
+			   sentences,
+			   length,
 			   lines;
 
 		fillw::occur_map_type occurrences;
 
-		std::vector<size_t> sentence_lines;
 	};
-
-
-	struct sentence_output
-	{
-		bool active;
-		std::wostringstream sentences;
-	};
-
 
 	//// Prototypes
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
 	void getHelp();
+
 	void setOptions(int argc, char** argv, fillw::options &opt);
 	
-	void getSentenceLines(const std::wstring &data, fillw::statistics &stats);
+	int getText(const options &opt, std::wstring &text);
+	
+	size_t getSentenceCount(const std::wstring &data);
 
+	size_t getLineCount(const std::wstring &data);
 
 	void getOccurrences(const std::wstring &data, 
-						fillw::word_list_type *word_list,
+						const fillw::options &opt,
 						fillw::statistics &stats,
-						fillw::sentence_output &sout);
-
+						std::wostringstream &sout);
 
 }
-
 
 
 #endif
