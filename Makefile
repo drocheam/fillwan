@@ -14,6 +14,7 @@ BUILDDIR=obj
 TARGETDIR=bin
 
 SOURCES= $(SOURCEDIR)/processing.cpp $(SOURCEDIR)/main.cpp
+HEADERS= $(SOURCEDIR)/definitions.hpp $(SOURCEDIR)/words_de.hpp $(SOURCEDIR)/words_en.hpp 
 OBJECTS= $(BUILDDIR)/processing.o $(BUILDDIR)/main.o
 
 
@@ -29,12 +30,13 @@ link: compile
 
 compile: $(OBJECTS)
 
-$(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.cpp | makedir
+# currently rebuilds everything if a header has changed
+$(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.cpp $(HEADERS) | makedir
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 makedir:
-	mkdir -p $(BUILDDIR)
-	mkdir -p $(TARGETDIR)
+	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(TARGETDIR)
 
 
 # Misc
@@ -52,8 +54,8 @@ uninstall:
 
 compress:
 	strip -s -R .comment $(TARGETDIR)/$(NAME)
-	upx --lzma $(TARGETDIR)/$(NAME)
+	upx --lzma -qq $(TARGETDIR)/$(NAME)
 
 decompress:
-	upx -d $(TARGETDIR)/$(NAME)
+	upx -d -qq $(TARGETDIR)/$(NAME)
 

@@ -52,9 +52,9 @@ inline std::wstring SIGNAL_SEQ_CLOSE;
 
 // needed for inPipe below
 #ifdef __unix__         
-#include <unistd.h>
+	#include <unistd.h>
 #elif defined(_WIN32) || defined(WIN32) 
-#include <io.h>
+	#include <io.h>
 #endif
 
 
