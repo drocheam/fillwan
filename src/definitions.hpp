@@ -39,7 +39,7 @@ constexpr std::wstring_view SIGNAL_SEQ_ANSI_CLOSE = 	L"\033[0m";
 
 constexpr std::wstring_view SEPARATOR = L"--------------------------------\n";
 
-constexpr std::wstring_view punctuation_sent = L".:;?!¿⁇⁉⁈‽⸘؟·჻";
+constexpr std::wstring_view punctuation_sent = L".:;?!¿⁇⁉⁈‽⸘";
 
 
 // global variables for holding the color formatting strings
@@ -63,36 +63,45 @@ namespace fillw
 
 	//// typedefs
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	
+
+	// slightly faster than std::towlower
+	inline auto towlower = [](wchar_t c) -> wchar_t 
+	{ 
+		if (c > 64 && c < 91) // ASCII capitalized letters 
+			return c + 32;
+		else if (c > 127) // outside ASCII
+			return std::towlower(c);
+		else // inside ASCII, but no capitalized letter
+			return c;
+	};
+
 	 //comparator for case independent comparison
-	inline auto caseless_less = [](const std::wstring& lhs, const std::wstring &rhs) -> bool
+	inline auto caseless_less = [](const std::wstring_view& lhs, const std::wstring_view &rhs) -> bool
 	{
 		for(size_t i = 0; i < lhs.length() && i < rhs.length(); i++)
-			if (std::towlower(lhs[i]) != std::towlower(rhs[i]))
-				return std::towlower(lhs[i]) < std::towlower(rhs[i]);
+			if (fillw::towlower(lhs.at(i)) != fillw::towlower(rhs.at(i)))
+				return fillw::towlower(lhs.at(i)) < fillw::towlower(rhs.at(i));
 
 		return (lhs.length() < rhs.length());
 	};
 
-	inline auto caseless_hash = [](const std::wstring &expr) -> size_t
+	inline auto caseless_hash = [](const std::wstring_view &expr) -> size_t
 	{
 		std::wstring expr2(expr);
-
-		// convert to lower case. Most chars are a-z, so check this and don't convert
-		std::for_each(expr2.begin(), expr2.end(), [](auto &c){if (!(c <= L'z' && c >= L'a')) c = std::towlower(c);});
+		std::transform(expr.begin(), expr.end(), expr2.begin(), fillw::towlower);
 
 		return std::hash<std::wstring>()(expr2);
 	};
 
-	inline auto caseless_equal = []( const std::wstring& lhs, const std::wstring& rhs) -> bool
+	inline auto caseless_equal = []( const std::wstring_view& lhs, const std::wstring_view& rhs) -> bool
 	{
 		return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
-						  [](auto & a, auto & b) { return a == b || std::towlower(a) == std::towlower(b);} );
+						  [](auto a, auto b) { return fillw::towlower(a) == fillw::towlower(b);} );
 	};
 
-	typedef std::vector<std::pair<std::wstring, size_t>> 						output_map_type;
+	typedef std::vector<std::pair<std::wstring_view, size_t>> 					output_map_type;
 	
-	typedef std::unordered_map<std::wstring, 
+	typedef std::unordered_map<std::wstring_view, 
 							   size_t, 
 							   decltype(caseless_hash),
 							   decltype(caseless_equal)> 						occur_map_type;
@@ -146,11 +155,11 @@ namespace fillw
 	
 	int getText(const options &opt, std::wstring &text);
 	
-	size_t getSentenceCount(const std::wstring &data);
+	size_t getSentenceCount(std::wstring_view data);
 
-	size_t getLineCount(const std::wstring &data);
+	size_t getLineCount(std::wstring_view data);
 
-	void getOccurrences(const std::wstring &data, 
+	void getOccurrences(std::wstring_view data, 
 						const fillw::options &opt,
 						fillw::statistics &stats,
 						std::wostringstream &sout);
