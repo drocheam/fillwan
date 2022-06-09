@@ -3,7 +3,7 @@
 ## Fillword Analysis
 
 This tool analyzes a given text for fill words and other potentially unwanted words and expressions in scientific writing.
-Outputs are a list of found words with occurence count as well as a sentence list.
+Outputs statistics and a list of found words with occurence count. Using the dump option it outputs the original text with the expressions being highlighted.
 
 
 ### Analyzed Words (English)
@@ -12,8 +12,8 @@ A list of analyzed categories with examples can be found below.
 
 * first person perspective (I, my, we, our, ...)
 * conjunctive (could, would, ...)
-* transition words (but, therefore)
-* colloquial terms (ok, nice, stuff, ...)
+* transition words (but, therefore, ...)
+* colloquial terms (okay, nice, stuff, ...)
 * fill words (indeed, really, very, ...)
 * weakening expressions (quite, most, probably, ...)
 * words and adjectives with little meaning (good, right, thing, ...)
@@ -54,9 +54,9 @@ Scroll through the text with the expressions being highlighted
 cat text.txt | fillwan -cd | less -RN
 ```
 
-Print all lines containing fill expressions with line numbers
+Scroll through all lines containing fill expressions
 ```
-cat text.txt | fillwan -d | grep -ne "<<[^>]\+>>"
+cat text.txt | fillwan -d | grep --color=always -ne "<<[^>]\+>> | less -R"
 ```
 
 ### Building Instructions
