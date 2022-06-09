@@ -50,9 +50,9 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 	{
 		par = std::string(argv[i]);
 
-		if (par.at(0) == '-' && par.length() > 2 && par.at(1) != '-')
+		if (par[0] == '-' && par.length() > 2 && par[1] != '-')
 			for (size_t j = 1; j < par.length(); j++)
-				args.push_back(std::string("-") + par.at(j));
+				args.push_back(std::string("-") + par[j]);
 		else
 			args.push_back(par);
 	}
@@ -60,7 +60,7 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 	// set options depending on args
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		par = args.at(i);
+		par = args[i];
 
 		if (par == "--alpha" || par == "-a")
 			opt.sort_occur = false;
@@ -81,7 +81,7 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 			if (i == size_t(args.size() - 1))
 				throw std::runtime_error("Language parameter missing.");
 
-			lang = args.at(++i);
+			lang = args[++i];
 
 			// enfore lower case
 			std::transform(lang.begin(), lang.end(), lang.begin(), [](auto c){ return std::towlower(c); });
@@ -91,7 +91,7 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 			else						throw std::invalid_argument("Invalid language '" + lang + "'.");
 		}
 		else if (i == args.size() - 1)
-			opt.path = args.at(i);
+			opt.path = args[i];
 		else
 			throw std::invalid_argument(par);
 	}
@@ -105,15 +105,14 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 }
 
 
-void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
+void fillw::getOccurrences(const std::wstring &data, const fillw::options &opt,
 						   fillw::statistics &stats, std::wostringstream &sout)
 {
 	using std::wstring, std::find_if, std::find_if_not, std::reverse_iterator;
 				
 	bool prem_break; // premature break, punctuation mark ends the sentence
-	bool succ;
 
-	size_t ws_e, start_wd, end_wd;
+	size_t ws_e, word_start, word_end, start_wd, end_wd;
 
 	std::vector<size_t> ws_pos;
 	std::wstring_view sent, word;
@@ -139,6 +138,8 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 	stats.fill_count = 0; 
 	stats.word_count = 0;
 
+	bool succ = false;
+
 	for(size_t i = 0; i < ws_pos.size()-1; i++)
 	{
 		prem_break = false;
@@ -154,7 +155,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 				if (i+j+1 >= ws_pos.size() || prem_break)
 					break;
 
-				word = data.substr(start_wd, ws_pos.at(i+j+1)-start_wd);
+				word = std::wstring_view(data).substr(start_wd, ws_pos.at(i+j+1)-start_wd);
 
 				// exclude punctuation marks at the end of the word
 				auto end_it = find_if_not(reverse_iterator(word.end()), 
@@ -170,15 +171,10 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 					break;
 
 				word_s = std::wstring(word);
-				
-				if (j > 0)
-				{
-					// convert whitespaces to space, remove multiple ones
-					std::replace_if(word_s.begin(), word_s.end(), ::iswspace, L' ');
-					auto I = unique(word_s.begin(), word_s.end(), 
-									[](auto& lhs, auto& rhs){ return lhs == L' ' && lhs == rhs; } );
-					word_s.erase(I, word_s.end());
-				}
+				std::replace_if(word_s.begin(), word_s.end(), ::iswspace, L' ');
+				auto I = unique(word_s.begin(), word_s.end(), 
+								[](auto& lhs, auto& rhs){ return lhs == L' ' && lhs == rhs; } );
+				word_s.erase(I, word_s.end());
 
 				auto &wn = opt.word_list->at(j);
 				auto it = wn.find(word_s);
@@ -190,15 +186,23 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 
 				if (it != wn.end())
 				{
-					if (opt.dump)
-						sout << data.substr(ws_pos.at(i), start_wd-ws_pos.at(i))
-							 << SIGNAL_SEQ_OPEN 
-							 << data.substr(start_wd, end_wd)
-							 << SIGNAL_SEQ_CLOSE 
-							 << data.substr(start_wd + end_wd, ws_pos.at(i+j+1)-(start_wd+end_wd));
+					if (stats.occurrences.find(*it) != stats.occurrences.end())
+						stats.occurrences.at(*it)++;
 					else
-						// increments the element and inserts one if needed
-						stats.occurrences[*it]++;
+						stats.occurrences.emplace(*it, 1);
+
+					if (opt.dump)
+					{
+						word_start = start_wd;
+						word_end = start_wd + end_wd;
+
+						sout << std::wstring_view(data).substr(ws_pos.at(i), word_start-(ws_pos.at(i)))
+							 << SIGNAL_SEQ_OPEN 
+							 << std::wstring_view(data).substr(word_start, word_end-word_start)
+							 << SIGNAL_SEQ_CLOSE 
+							 << std::wstring_view(data).substr(word_end, ws_pos.at(i+j+1)-word_end);
+					}
+
 
 					i += j; // skip search for next words, since they already belong 
 							// to a fill word expression
@@ -210,10 +214,10 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 			}
 		}
 		if (!succ && opt.dump)
-			sout << data.substr(ws_pos.at(i), ws_pos.at(i+1)-ws_pos.at(i)); 
+			sout << std::wstring_view(data).substr(ws_pos.at(i), ws_pos.at(i+1)-ws_pos.at(i)); 
 	}
 	if (opt.dump)
-		sout << data.substr(ws_pos.at(ws_pos.size()-2), data.length()); 
+		sout << std::wstring_view(data).substr(ws_pos.at(ws_pos.size()-2), data.length()); 
 }
 
 
@@ -245,18 +249,12 @@ int fillw::getText(const options &opt, std::wstring &text)
 		std::array<wchar_t, 2 << 12> buffer;
 		while(fgetws(buffer.data(), buffer.size(), file) != NULL)
 			text.append(buffer.data());
-
-		if (text.length() == 0)
-		{
-			std::wcerr << "No text received." << std::endl;
-			return 1;
-		}
 	}
 	return 0;
 }
 
 
-size_t fillw::getLineCount(std::wstring_view data)
+size_t fillw::getLineCount(const std::wstring &data)
 {
 	size_t count = 0;
 	
@@ -268,7 +266,7 @@ size_t fillw::getLineCount(std::wstring_view data)
 }
 
 
-size_t fillw::getSentenceCount(std::wstring_view data)
+size_t fillw::getSentenceCount(const std::wstring &data)
 {
 	size_t pos=0, count=0;
 
