@@ -213,7 +213,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 			sout << data.substr(ws_pos.at(i), ws_pos.at(i+1)-ws_pos.at(i)); 
 	}
 	if (opt.dump)
-		sout << data.substr(ws_pos.at(ws_pos.size()-2), data.length()); 
+		sout << data.substr(ws_pos.at(ws_pos.size()-1), data.length()); 
 }
 
 
@@ -265,25 +265,5 @@ size_t fillw::getLineCount(std::wstring_view data)
 			count++;
 
 	return (count)? count: count + 1;
-}
-
-
-size_t fillw::getSentenceCount(std::wstring_view data)
-{
-	size_t pos=0, count=0;
-
-	while (pos < data.length())
-	{
-		if (pos > 0)
-			pos = std::find_if(data.begin()+pos, data.end(), std::iswspace) - data.begin();
-		pos = std::find_if(data.begin()+pos, data.end(), std::iswalnum) - data.begin();
-
-		if (pos < data.length())
-		{
-			pos = data.find_first_of(punctuation_sent, pos);
-			count++;
-		}
-	}
-	return count;
 }
 

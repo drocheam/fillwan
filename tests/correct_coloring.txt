@@ -1,0 +1,22 @@
+Make sure these are colored correctly without the dot:
+
+Should
+Should.
+.Should
+.Might.
+
+This should be not colored at all, because these don't count as single words:
+Should.Might
+
+Multiline expressions:
+as a 
+matter of fact
+<not colored>
+such
+that
+
+These don't count:
+as a mat
+ter of fact
+
+

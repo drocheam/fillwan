@@ -1,5 +1,9 @@
 
 *.layout
 *.depend
+*.o
+*.out
+*.d
+
 bin/
 obj/

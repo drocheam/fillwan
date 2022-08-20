@@ -16,13 +16,9 @@
 // Includes a newline character. 
 // Last line of file is excluded if it consists only of the \n character.
 //
-// Sentence: 
-// whitespace on beginning + alphanumerical char somewhere after + punctuation mark or EOF.
-//
 // Word:
 // one or more alphanumerical characters between punctuation marks or whitespaces
 // 
-
 
 // Formatting Strings
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,12 +134,10 @@ namespace fillw
 	{
 		size_t fill_count,
 			   word_count,
-			   sentences,
 			   length,
 			   lines;
 
 		fillw::occur_map_type occurrences;
-
 	};
 
 	//// Prototypes
@@ -155,8 +149,6 @@ namespace fillw
 	
 	int getText(const options &opt, std::wstring &text);
 	
-	size_t getSentenceCount(std::wstring_view data);
-
 	size_t getLineCount(std::wstring_view data);
 
 	void getOccurrences(std::wstring_view data, 

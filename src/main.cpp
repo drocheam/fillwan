@@ -42,7 +42,6 @@ int main(int argc, char** argv)
 	if (!opt.dump)
 	{
 		stats.length = text.length();
-		stats.sentences = fillw::getSentenceCount(text);
 		stats.lines = fillw::getLineCount(text);
 
 		// assign elements to vector
@@ -72,9 +71,8 @@ int main(int argc, char** argv)
 			   << SEPARATOR 
 			   << stats.length        << " characters, " 
 			   << stats.word_count    << " words, " 
-			   << stats.fill_count    << " fill expressions\n"
-			   << stats.sentences     << " sentences, " 
-			   << stats.lines 	      << " lines\n\n\n";
+			   << stats.lines 	      << " lines, "
+			   << stats.fill_count    << " fill expressions\n\n\n";
 
 	if (output_map.size())
 	{

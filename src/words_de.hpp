@@ -341,7 +341,7 @@ namespace fillw
 			L"entsprechende",
 			L"entsprechender",
 			L"entsprechendes",
-			L"erfolgen"
+			L"erfolgen",
 			L"erfolgt",
 			L"erfolgte",
 			L"erfolgtem",
@@ -1230,7 +1230,7 @@ namespace fillw
 			L"woraus",
 			L"worin",
 			L"wurde",
-			L"wurden"
+			L"wurden",
 			L"würde",
 			L"würden",
 			L"würdest",
@@ -1418,10 +1418,10 @@ namespace fillw
 			L"weshalb auch immer",
 			L"wieso auch immer",
 			L"zu guter Letzt",
-			L"zur Verwendung kam"
-			L"zur Verwendung kamen"
-			L"zur Verwendung kommen"
-			L"zur Verwendung kommt"
+			L"zur Verwendung kam",
+			L"zur Verwendung kamen",
+			L"zur Verwendung kommen",
+			L"zur Verwendung kommt",
 		}
 	};
 

@@ -1,0 +1,17 @@
+Dies ist ein Text mit einigen Füllwörtern.
+Damit das hier richtig funktioniert, muss natürlich der Parameter -l DE angegeben werden.
+Das Verarbeiten sollte auf jeden Fall mehrere gefunden Füllwörter liefern,
+außerdem prüft es außerdem den Umgang mit Umlauten.
+
+Zwar sind diese auch in anderen Codierungen enthalten, aber im Standardumgang in C++ mit Zeichen außerhalb von ASCII sollte das trotzdem zu Problemen führen, wenn nicht die richtige Stringklasse genutzt wird.
+
+Somit sollte vor allem darauf geachtet werden, dass die nachfolgenden Wörter auch als Füllwörter markiert werden:
+* würde
+* könnte
+* natürlich
+* mit größter Wahrscheinlichkeit
+
+Vor allem sollten auch die nachfolgenden Zeilen mit der Option -d ausgegeben werden:
+
+
+

@@ -373,8 +373,8 @@ namespace fillw
 			L"would've",
 			L"yet",
 			L"you",
-			L"you're"
-			L"you've"
+			L"you're",
+			L"you've",
 			L"your",
 			L"yours",
 		},
@@ -477,6 +477,7 @@ namespace fillw
 			L"sort of",
 			L"so that",
 			L"such as",
+			L"such that",
 			L"taken together",
 			L"that is",
 			L"that means",
@@ -510,7 +511,7 @@ namespace fillw
 			L"without doubt",
 			L"would be",
 			L"you know",
-			L"you see"
+			L"you see",
 		},
 		{
 			L"all the same",
@@ -614,7 +615,7 @@ namespace fillw
 			L"when in fact",
 			L"while in fact",
 			L"with regards to",
-			L"with the assumption"
+			L"with the assumption",
 		},
 		{
 			L"all else being equal",
@@ -661,7 +662,7 @@ namespace fillw
 			L"when it comes to",
 			L"with the aid of",
 			L"with the help of",
-			L"with this in mind"
+			L"with this in mind",
 		},
 		{
 			L"as a matter of fact",
@@ -676,7 +677,7 @@ namespace fillw
 			L"the fact of the matter",
 			L"the first step is to ",
 			L"what I want to say",
-			L"with this fact in mind"
+			L"with this fact in mind",
 		}
 	};
 }
