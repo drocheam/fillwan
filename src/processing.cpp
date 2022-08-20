@@ -78,22 +78,30 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 		}
 		else if (par == "--lang" || par == "-l")
 		{
-			if (i == size_t(args.size() - 1))
-				throw std::runtime_error("Language parameter missing.");
-
-			lang = args.at(++i);
+			if (i == size_t(args.size() - 1)){
+				getHelp();
+				exit(2);
+			}
 
 			// enfore lower case
+			lang = args.at(++i);
 			std::transform(lang.begin(), lang.end(), lang.begin(), [](auto c){ return std::towlower(c); });
 
-			if (lang == "de")			opt.word_list = &fillw::word_list_de;
-			else if (lang == "en")		opt.word_list = &fillw::word_list_en;
-			else						throw std::invalid_argument("Invalid language '" + lang + "'.");
+			if (lang == "de")			
+				opt.word_list = &fillw::word_list_de;
+			else if (lang == "en")		
+				opt.word_list = &fillw::word_list_en;
+			else{
+				getHelp();
+				exit(2);
+			}
 		}
-		else if (i == args.size() - 1)
+		else if (i == args.size() - 1 && args.at(i).at(0) != '-')
 			opt.path = args.at(i);
-		else
-			throw std::invalid_argument(par);
+		else{
+			getHelp();
+			exit(2);
+		}
 	}
 
 	// assign output sequences
@@ -101,7 +109,6 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 	HIGHLIGHT_SEQ_OPEN 	= (opt.color)?  HIGHLIGHT_SEQ_ANSI: 	HIGHLIGHT_SEQ_NON_ANSI;
 	SIGNAL_SEQ_OPEN 	= (opt.color)?  SIGNAL_SEQ_ANSI_OPEN: 	SIGNAL_SEQ_NON_ANSI_OPEN;
 	SIGNAL_SEQ_CLOSE    = (opt.color)?  SIGNAL_SEQ_ANSI_CLOSE: 	SIGNAL_SEQ_NON_ANSI_CLOSE;
-
 }
 
 
@@ -212,6 +219,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 		if (!succ && opt.dump)
 			sout << data.substr(ws_pos.at(i), ws_pos.at(i+1)-ws_pos.at(i)); 
 	}
+	// add remaining text
 	if (opt.dump)
 		sout << data.substr(ws_pos.at(ws_pos.size()-1), data.length()); 
 }
@@ -219,7 +227,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 
 int fillw::getText(const options &opt, std::wstring &text)
 {
-	// exit if not connected to a pipe
+	// exit if not connected to a pipe and no file provided
 	if (opt.path == "" && !fillw::inPipe())
 	{
 		std::wcerr << "Pipe text into this program or specify a file path." << std::endl;
@@ -234,7 +242,7 @@ int fillw::getText(const options &opt, std::wstring &text)
  			file =  fopen(opt.path.c_str(), "r");
 			if (file == NULL)
 			{
-				std::wcerr << "File Not Found";
+				std::wcerr << "File Not Found" << std::endl;
 				return -1;
 			}
 		}
@@ -264,6 +272,7 @@ size_t fillw::getLineCount(std::wstring_view data)
 		if (c == L'\n')
 			count++;
 
+	// file has always at least one line
 	return (count)? count: count + 1;
 }
 
