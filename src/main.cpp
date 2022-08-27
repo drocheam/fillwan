@@ -1,4 +1,3 @@
-
 #include "definitions.hpp"
 
 #include <algorithm>
@@ -34,6 +33,7 @@ int main(int argc, char** argv)
 
 	status = fillw::getText(opt, text);
 
+	// return error code
 	if (status)
 		return status;
 

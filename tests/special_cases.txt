@@ -5,7 +5,7 @@ DD-EE
 
 55 -> 14563
 
-compared to wc (coreutils) a word needs to have alphanumerical symbols,
+Compared to wc (coreutils) a word needs to have alphanumerical symbols,
 so fillwan prints 49 word, but wc 51 because the former does not include "->".
 
 The following empty lines still count as lines in both cases, the whole file should have 13 now.

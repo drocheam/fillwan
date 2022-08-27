@@ -1,4 +1,3 @@
-
 #include "definitions.hpp"
 
 #include "words_de.hpp"
@@ -85,7 +84,8 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 
 			// enfore lower case
 			lang = args.at(++i);
-			std::transform(lang.begin(), lang.end(), lang.begin(), [](auto c){ return std::towlower(c); });
+			std::transform(lang.begin(), lang.end(), lang.begin(), 
+												[](auto c){ return std::towlower(c); });
 
 			if (lang == "de")			
 				opt.word_list = &fillw::word_list_de;

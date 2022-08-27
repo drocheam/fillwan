@@ -8,6 +8,13 @@
 #include <sstream>
 #include <algorithm>
 
+// needed for inPipe below
+#ifdef __unix__         
+	#include <unistd.h>
+#elif defined(_WIN32) || defined(WIN32) 
+	#include <io.h>
+#endif
+
 
 // Definitions
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +44,6 @@ constexpr std::wstring_view SEPARATOR = L"--------------------------------\n";
 
 constexpr std::wstring_view punctuation_sent = L".:;?!¿⁇⁉⁈‽⸘";
 
-
 // global variables for holding the color formatting strings
 // (which strings are stored here is determined at runtime via program parameter)
 inline std::wstring HIGHLIGHT_SEQ_CLOSE; 
@@ -46,53 +52,35 @@ inline std::wstring SIGNAL_SEQ_OPEN;
 inline std::wstring SIGNAL_SEQ_CLOSE;
 
 
-// needed for inPipe below
-#ifdef __unix__         
-	#include <unistd.h>
-#elif defined(_WIN32) || defined(WIN32) 
-	#include <io.h>
-#endif
-
-
 namespace fillw
 {
-
 	//// typedefs
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	// slightly faster than std::towlower
-	inline auto towlower = [](wchar_t c) -> wchar_t 
-	{ 
-		if (c > 64 && c < 91) // ASCII capitalized letters 
-			return c + 32;
-		else if (c > 127) // outside ASCII
-			return std::towlower(c);
-		else // inside ASCII, but no capitalized letter
-			return c;
-	};
-
-	 //comparator for case independent comparison
+	// comparator for case independent comparison
 	inline auto caseless_less = [](const std::wstring_view& lhs, const std::wstring_view &rhs) -> bool
 	{
 		for(size_t i = 0; i < lhs.length() && i < rhs.length(); i++)
-			if (fillw::towlower(lhs.at(i)) != fillw::towlower(rhs.at(i)))
-				return fillw::towlower(lhs.at(i)) < fillw::towlower(rhs.at(i));
+			if (std::towlower(lhs.at(i)) != std::towlower(rhs.at(i)))
+				return std::towlower(lhs.at(i)) < std::towlower(rhs.at(i));
 
 		return (lhs.length() < rhs.length());
 	};
 
+	// hashing function for caseless comparison
 	inline auto caseless_hash = [](const std::wstring_view &expr) -> size_t
 	{
 		std::wstring expr2(expr);
-		std::transform(expr.begin(), expr.end(), expr2.begin(), fillw::towlower);
+		std::transform(expr.begin(), expr.end(), expr2.begin(), std::towlower);
 
 		return std::hash<std::wstring>()(expr2);
 	};
 
-	inline auto caseless_equal = []( const std::wstring_view& lhs, const std::wstring_view& rhs) -> bool
+	// equality function for caseless comparison
+	inline auto caseless_equal = [](const std::wstring_view& lhs, const std::wstring_view& rhs) -> bool
 	{
 		return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
-						  [](auto & a, auto & b) { return fillw::towlower(a) == fillw::towlower(b);} );
+						  [](auto & a, auto & b) { return std::towlower(a) == std::towlower(b);} );
 	};
 
 	typedef std::vector<std::pair<std::wstring_view, size_t>> 					output_map_type;
@@ -105,7 +93,6 @@ namespace fillw
 	typedef const std::vector<std::unordered_set<std::wstring, 
 												 decltype(caseless_hash),
 												 decltype(caseless_equal)>> 	word_list_type;
-
 
 	// InPipe Detection Function
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +142,6 @@ namespace fillw
 						const fillw::options &opt,
 						fillw::statistics &stats,
 						std::wostringstream &sout);
-
 }
 
 

@@ -3,8 +3,8 @@
 
 #include "definitions.hpp"
 
-// expression list, separated by word count
-// alphabetical sorting is for convenience only and has no impact on the program
+// expression list, divided by word count
+// alphabetical sorting is for convenience only and has no impact on the process
 
 namespace fillw
 {

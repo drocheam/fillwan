@@ -1,4 +1,4 @@
-Some english text with fill words.
+Some English text with fill words.
 This text is also only latin1 encoded (1 Byte per char), but it still should work normally,
 although we use std::wstring.
 
