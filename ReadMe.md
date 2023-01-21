@@ -1,14 +1,15 @@
 
 # fillwan 
-## Fillword Analysis
+## FILLWord ANalysis
 
 This tool analyzes a given text for fill words and other potentially unwanted words and expressions in scientific writing.
-Outputs statistics and a list of found words with occurrence count. With the -d option it dumps the original text with the expressions being highlighted.
+Outputs statistics and a list of found words with occurrence count. With the ``-d`` option it dumps the original text with the expressions being highlighted.
 
 
-### Analyzed Words (English)
+### Analyzed Words/Expressions (English)
 
-A list of analyzed categories with examples can be found below.
+A list of some analyzed categories with examples can be found below.
+All expressions are found in the [source file](src/words_en.hpp).
 
 * first person perspective (I, my, we, our, ...)
 * conjunctive (could, would, ...)
@@ -20,7 +21,9 @@ A list of analyzed categories with examples can be found below.
 * commonly overused expression (be seen, is shown, for example, ...)
 
 
-### Analyzed Words (German)
+### Analysierte Wörter/Ausdrücke (German)
+
+Eine Liste aller Ausdrücke befindet sich [im Quellcode](src/words_de.hpp).
 
 * Personalpronomen (ich, mein, wir, uns, ...)
 * Indefinitpronomen (man)
@@ -35,7 +38,7 @@ A list of analyzed categories with examples can be found below.
 
 ### Usage
 
-The below program options are also displayed using the -h parameter.
+The below program options are also displayed using the ``-h`` parameter.
 
 ```
 usage: fillwan [options] [file]
@@ -49,24 +52,24 @@ options:
 -a | --alpha             sort occurrence map alphabetically, not by count
 ```
 
-For the following commands an Unix system including the``grep``, ``cat``, and ``less`` utilities is assumed.
+For the following commands a Unix system including the ``grep``, ``cat``, and ``less`` utilities is assumed.
 
-You can either pipe text into fillwan like
+You can either pipe text into fillwan like:
 ```
 cat text.txt | fillwan
 ```
 
-Or load the text file directly
+Or load the text file directly:
 ```
 fillwan text.txt
 ```
 
-Example 1: Scroll interactively through the text with the expressions being highlighted:
+**Example 1**: Scroll interactively through the text with the expressions being highlighted:
 ```
 cat text.txt | fillwan -cd | less -RN
 ```
 
-Example 2: Scroll through all lines containing fill expressions, show line numbers from original text
+**Example 2**: Scroll through all lines containing fill expressions, show line numbers from original text
 ```
 cat text.txt | fillwan -d | grep --color=always -ne "<<[^>]\+>>" | less -R
 ```
