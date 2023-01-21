@@ -49,18 +49,31 @@ options:
 -a | --alpha             sort occurrence map alphabetically, not by count
 ```
 
-Scroll through the text with the expressions being highlighted
+For the following commands an Unix system including the``grep``, ``cat``, and ``less`` utilities is assumed.
+
+You can either pipe text into fillwan like
+```
+cat text.txt | fillwan
+```
+
+Or load the text file directly
+```
+fillwan text.txt
+```
+
+Example 1: Scroll interactively through the text with the expressions being highlighted:
 ```
 cat text.txt | fillwan -cd | less -RN
 ```
 
-Scroll through all lines containing fill expressions
+Example 2: Scroll through all lines containing fill expressions, show line numbers from original text
 ```
 cat text.txt | fillwan -d | grep --color=always -ne "<<[^>]\+>>" | less -R
 ```
 
 ### Building Instructions
 
-Run ``make``.
-Requires C++20
+Run the Makefile using ``make``.
+This program requires a compiler supporting C++20.
 
+Installation with ``sudo make install``.

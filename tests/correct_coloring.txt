@@ -5,7 +5,7 @@ Should.
 .Should
 .Might.
 
-This should be not colored at all, because these don't count as single words:
+These should be not colored at all, because these don't count as single words:
 Should.Might
 
 Multiline expressions:
