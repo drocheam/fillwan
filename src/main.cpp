@@ -14,8 +14,8 @@ int main(int argc, char** argv)
 	
 	std::setlocale(LC_ALL, "");
 	
-	fillw::options 			opt;
-	fillw::statistics 		stats;
+	fillw::options			opt;
+	fillw::statistics		stats;
 	fillw::output_map_type  output_map;
 
 	std::wostringstream sout;
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 			   << SEPARATOR 
 			   << stats.length        << " characters, " 
 			   << stats.word_count    << " words, " 
-			   << stats.lines 	      << " lines, "
+			   << stats.lines		  << " lines, "
 			   << stats.fill_count    << " fill expressions\n\n\n";
 
 	if (output_map.size())

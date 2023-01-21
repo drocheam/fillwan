@@ -20,10 +20,10 @@ void fillw::getHelp()
 	<< "usage: fillwan [options] [file]\n" 
 	<< "reads from standard input if no file is provided\n\n"
 	<< "options:\n" << left
-	<< setw(25) << "-h | --help" 		   << "display this help\n"
+	<< setw(25) << "-h | --help"		   << "display this help\n"
 	<< setw(25) << "-l | --lang (EN | DE)" << "language selection. English or German. Default: EN\n"
-	<< setw(25) << "-c | --color"  		   << "enable colored output\n"
-	<< setw(25) << "-d | --dump"	 	   << "dump text with highlighted fill expressions\n"
+	<< setw(25) << "-c | --color"		   << "enable colored output\n"
+	<< setw(25) << "-d | --dump"		   << "dump text with highlighted fill expressions\n"
 	<< setw(25) << "-a | --alpha "		   << "sort occurrence map alphabetically, not by count\n";
 }
 
@@ -35,12 +35,12 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 	std::string lang, par;
 
 	// default parameters
-	opt.dump 		= false;
-	opt.sort_occur 	= true;
-	opt.color 		= false;
+	opt.dump		= false;
+	opt.sort_occur	= true;
+	opt.color		= false;
 	opt.help_only	= false;
 	opt.path		= "";
-	opt.word_list 	= &word_list_en;
+	opt.word_list	= &word_list_en;
 
 	std::vector<std::string> args;
 
@@ -105,10 +105,10 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 	}
 
 	// assign output sequences
-	HIGHLIGHT_SEQ_CLOSE = (opt.color)?  RESET_SEQ_ANSI: 		RESET_SEQ_NON_ANSI;
-	HIGHLIGHT_SEQ_OPEN 	= (opt.color)?  HIGHLIGHT_SEQ_ANSI: 	HIGHLIGHT_SEQ_NON_ANSI;
-	SIGNAL_SEQ_OPEN 	= (opt.color)?  SIGNAL_SEQ_ANSI_OPEN: 	SIGNAL_SEQ_NON_ANSI_OPEN;
-	SIGNAL_SEQ_CLOSE    = (opt.color)?  SIGNAL_SEQ_ANSI_CLOSE: 	SIGNAL_SEQ_NON_ANSI_CLOSE;
+	HIGHLIGHT_SEQ_CLOSE = (opt.color)?  RESET_SEQ_ANSI:			RESET_SEQ_NON_ANSI;
+	HIGHLIGHT_SEQ_OPEN	= (opt.color)?  HIGHLIGHT_SEQ_ANSI:		HIGHLIGHT_SEQ_NON_ANSI;
+	SIGNAL_SEQ_OPEN		= (opt.color)?  SIGNAL_SEQ_ANSI_OPEN:	SIGNAL_SEQ_NON_ANSI_OPEN;
+	SIGNAL_SEQ_CLOSE    = (opt.color)?  SIGNAL_SEQ_ANSI_CLOSE:	SIGNAL_SEQ_NON_ANSI_CLOSE;
 }
 
 
@@ -239,7 +239,7 @@ int fillw::getText(const options &opt, std::wstring &text)
 
 		if (opt.path != "")
 		{
- 			file =  fopen(opt.path.c_str(), "r");
+			file =  fopen(opt.path.c_str(), "r");
 			if (file == NULL)
 			{
 				std::wcerr << "File Not Found" << std::endl;

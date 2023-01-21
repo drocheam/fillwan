@@ -30,15 +30,15 @@
 // Formatting Strings
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-constexpr std::wstring_view HIGHLIGHT_SEQ_NON_ANSI = 	L"";
-constexpr std::wstring_view HIGHLIGHT_SEQ_ANSI = 		L"\033[1m";
-constexpr std::wstring_view RESET_SEQ_NON_ANSI = 		L"";
-constexpr std::wstring_view RESET_SEQ_ANSI =	 		L"\033[0m";
+constexpr std::wstring_view HIGHLIGHT_SEQ_NON_ANSI =	L"";
+constexpr std::wstring_view HIGHLIGHT_SEQ_ANSI =		L"\033[1m";
+constexpr std::wstring_view RESET_SEQ_NON_ANSI =		L"";
+constexpr std::wstring_view RESET_SEQ_ANSI =			L"\033[0m";
 
-constexpr std::wstring_view SIGNAL_SEQ_NON_ANSI_OPEN = 	L"<<";
+constexpr std::wstring_view SIGNAL_SEQ_NON_ANSI_OPEN =	L"<<";
 constexpr std::wstring_view SIGNAL_SEQ_NON_ANSI_CLOSE = L">>";
-constexpr std::wstring_view SIGNAL_SEQ_ANSI_OPEN = 		L"\033[1;31m";
-constexpr std::wstring_view SIGNAL_SEQ_ANSI_CLOSE = 	L"\033[0m";
+constexpr std::wstring_view SIGNAL_SEQ_ANSI_OPEN =		L"\033[1;31m";
+constexpr std::wstring_view SIGNAL_SEQ_ANSI_CLOSE =		L"\033[0m";
 
 constexpr std::wstring_view SEPARATOR = L"--------------------------------\n";
 
@@ -83,16 +83,16 @@ namespace fillw
 						  [](auto & a, auto & b) { return std::towlower(a) == std::towlower(b);} );
 	};
 
-	typedef std::vector<std::pair<std::wstring_view, size_t>> 					output_map_type;
+	typedef std::vector<std::pair<std::wstring_view, size_t>>					output_map_type;
 	
 	typedef std::unordered_map<std::wstring_view, 
 							   size_t, 
 							   decltype(caseless_hash),
-							   decltype(caseless_equal)> 						occur_map_type;
+							   decltype(caseless_equal)>						occur_map_type;
 
 	typedef const std::vector<std::unordered_set<std::wstring, 
 												 decltype(caseless_hash),
-												 decltype(caseless_equal)>> 	word_list_type;
+												 decltype(caseless_equal)>>		word_list_type;
 
 	// InPipe Detection Function
 	///////////////////////////////////////////////////////////////////////////////////////////////
