@@ -35,7 +35,7 @@ Eine Liste aller Ausdrücke befindet sich [im Quellcode](src/words_de.hpp).
 * umgangssprachliche Formen (eh, halt, irgendwas, ...)
 * ungenaue Adjektive oder Wörter mit wenig Aussagekraft (gut, schlecht, einigermaßen, oft, ...)
 
-
+---
 ### Usage
 
 The below program options are also displayed using the ``-h`` parameter.
@@ -74,6 +74,19 @@ cat text.txt | fillwan -cd | less -RN
 cat text.txt | fillwan -d | grep --color=always -ne "<<[^>]\+>>" | less -R
 ```
 
+---
+### Screenshots
+
+Default usage of fillwan, here showing statistics on a test text:
+
+![fillwan showing statistics](screenshots/statistics_en-fs8.png)
+
+
+The following command instead dumps the text with the expressions highlighted:
+
+![fillwan example with dump option](screenshots/dump_en-fs8.png)
+
+---
 ### Building Instructions
 
 Run the Makefile using ``make``.
