@@ -9,7 +9,7 @@ on:
 jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 6
     
     steps:
       - name: Checkout code
@@ -19,8 +19,8 @@ jobs:
         run: sudo make install
         
   build-mac:
-    runs-on: mac-latest
-    timeout-minutes: 3
+    runs-on: macos-latest
+    timeout-minutes: 6
     
     steps:
       - name: Checkout code
