@@ -37,13 +37,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         
-      - name: Set up GCC
-        uses: egor-tensin/setup-mingw@v1
-        with:
-          platform: x64
+      #- name: Set up GCC
+      #  uses: egor-tensin/setup-mingw@v1
+      #  with:
+      #    platform: x64
         
       - name: Install make
         run: choco install make
         
       - name: Build program
-        run: sudo make install PREFIX=C:/
+        run: make install PREFIX=C:/
