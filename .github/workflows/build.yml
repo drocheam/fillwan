@@ -1,0 +1,33 @@
+name: Build Test
+
+ 
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Build
+        run: sudo make install
+
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Install make
+        run: choco install make
+        
+      - name: Build program
+        run: make CC=cl.exe PREFIX=C:/
