@@ -17,10 +17,21 @@ jobs:
         
       - name: Build
         run: sudo make install
+        
+  build-mac:
+    runs-on: mac-latest
+    timeout-minutes: 3
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Build
+        run: sudo make install
 
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 6
         
     steps:
       - name: Checkout code
