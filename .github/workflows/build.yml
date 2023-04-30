@@ -26,11 +26,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         
-      - name: Use MSVC compiler  
-        uses: ilammy/msvc-dev-cmd@v1
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
         
       - name: Install make
         run: choco install make
         
       - name: Build program
-        run: make CC=cl.exe PREFIX=C:/
+        run: make PREFIX=C:/
