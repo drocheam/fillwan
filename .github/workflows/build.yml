@@ -26,6 +26,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         
+      - name: Use MSVC compiler  
+        uses: ilammy/msvc-dev-cmd@v1
+        
       - name: Install make
         run: choco install make
         
