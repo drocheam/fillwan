@@ -9,10 +9,10 @@
 #include <algorithm>
 
 // needed for inPipe below
-#ifdef __unix__         
-    #include <unistd.h>
-#elif defined(_WIN32) || defined(WIN32) 
+#if defined(_WIN32) || defined(WIN32) 
     #include <io.h>
+#else
+	#include <unistd.h>
 #endif
 
 
@@ -97,10 +97,10 @@ namespace fillw
     // InPipe Detection Function
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    #ifdef __unix__         
-        inline auto inPipe = []() -> bool { return !isatty(fileno(stdin)); };
-    #elif defined(_WIN32) || defined(WIN32) 
+    #if defined(_WIN32) || defined(WIN32) 
         inline auto inPipe = []() -> bool { return !_isatty(_fileno(stdin)); };
+    #else
+		inline auto inPipe = []() -> bool { return !isatty(fileno(stdin)); };
     #endif
 
     //// Structs
