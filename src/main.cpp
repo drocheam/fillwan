@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip> 
-#include <locale>
+#include <clocale>
 
 
 int main(int argc, char** argv)
