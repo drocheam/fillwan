@@ -1,15 +1,23 @@
 #include "definitions.hpp"
 
+// word lists
 #include "words_de.hpp"
 #include "words_en.hpp"
 
-#include <algorithm>
-#include <string>
-#include <string_view>
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <array>
+// strings
+#include <string>  // std::string, std::wstring
+#include <string_view>  // std::wstring_view
+#include <sstream>  // std::wostringstream
+
+// other types
+#include <vector>  // std::vector
+#include <iostream>  // std::wcout, std::wcerr
+#include <array>  // std::array
+
+// functionality
+#include <iomanip>  // std::setw
+#include <algorithm>  // std::transform, std::find_if, std::find_if_not
+#include <cstdio>  // std::fopen, std::fclose
 
 
 void fillw::getHelp() 
@@ -36,12 +44,13 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 
     // default parameters
     opt.dump        = false;
-    opt.sort_occur    = true;
-    opt.color        = false;
-    opt.help_only    = false;
+    opt.sort_occur  = true;
+    opt.color       = false;
+    opt.help_only   = false;
     opt.path        = "";
-    opt.word_list    = &word_list_en;
+    opt.word_list   = &word_list_en;
 
+	// argument vector
     std::vector<std::string> args;
 
     // this parts creates the args vector and expands parameters like -sc to -s -c
@@ -77,41 +86,55 @@ void fillw::setOptions(int argc, char** argv, options &opt)
         }
         else if (par == "--lang" || par == "-l")
         {
-            if (i == size_t(args.size() - 1)){
+			// no language provided
+            if (i == size_t(args.size() - 1))
+			{
                 getHelp();
                 exit(2);
             }
 
-            // enfore lower case
+            // enforce lower case
             lang = args.at(++i);
             std::transform(lang.begin(), lang.end(), lang.begin(), 
-                                                [](auto c){ return std::towlower(c); });
+                           [](auto c){ return std::towlower(c); });
+
+			// assign correct language
 
             if (lang == "de")            
                 opt.word_list = &fillw::word_list_de;
+
             else if (lang == "en")        
                 opt.word_list = &fillw::word_list_en;
-            else{
+
+			// unknown language
+            else
+			{
                 getHelp();
                 exit(2);
             }
         }
+		// file path
         else if (i == args.size() - 1 && args.at(i).at(0) != '-')
             opt.path = args.at(i);
-        else{
+
+		// invalid parameter
+        else
+		{
             getHelp();
             exit(2);
         }
     }
 
     // assign output sequences
-    HIGHLIGHT_SEQ_CLOSE = (opt.color)?  RESET_SEQ_ANSI:            RESET_SEQ_NON_ANSI;
-    HIGHLIGHT_SEQ_OPEN    = (opt.color)?  HIGHLIGHT_SEQ_ANSI:        HIGHLIGHT_SEQ_NON_ANSI;
-    SIGNAL_SEQ_OPEN        = (opt.color)?  SIGNAL_SEQ_ANSI_OPEN:    SIGNAL_SEQ_NON_ANSI_OPEN;
-    SIGNAL_SEQ_CLOSE    = (opt.color)?  SIGNAL_SEQ_ANSI_CLOSE:    SIGNAL_SEQ_NON_ANSI_CLOSE;
+    HIGHLIGHT_SEQ_CLOSE = (opt.color)?  RESET_SEQ_ANSI:          RESET_SEQ_NON_ANSI;
+    HIGHLIGHT_SEQ_OPEN  = (opt.color)?  HIGHLIGHT_SEQ_ANSI:      HIGHLIGHT_SEQ_NON_ANSI;
+    SIGNAL_SEQ_OPEN     = (opt.color)?  SIGNAL_SEQ_ANSI_OPEN:    SIGNAL_SEQ_NON_ANSI_OPEN;
+    SIGNAL_SEQ_CLOSE    = (opt.color)?  SIGNAL_SEQ_ANSI_CLOSE:   SIGNAL_SEQ_NON_ANSI_CLOSE;
 }
 
 
+// TODO explain this function and its details
+//
 void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
                            fillw::statistics &stats, std::wostringstream &sout)
 {
@@ -126,7 +149,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
     std::wstring_view sent, word;
     std::wstring word_s;
 
-    // pre-reserve for speedup. a whitespace every 5 chars is a guess
+    // pre-reserve for speedup. a word length of 5 is a guess
     ws_pos.reserve(size_t(data.length()/5));
 
     if (!std::iswspace(data.at(0)))
@@ -182,8 +205,8 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
                 {
                     // convert whitespaces to space, remove multiple ones
                     std::replace_if(word_s.begin(), word_s.end(), ::iswspace, L' ');
-                    auto I = unique(word_s.begin(), word_s.end(), 
-                                    [](auto& lhs, auto& rhs){ return lhs == L' ' && lhs == rhs; } );
+                    auto I = std::unique(word_s.begin(), word_s.end(), 
+                                        [](auto& lhs, auto& rhs){ return lhs == L' ' && lhs == rhs; } );
                     word_s.erase(I, word_s.end());
                 }
 
@@ -227,7 +250,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 
 int fillw::getText(const options &opt, std::wstring &text)
 {
-    // exit if not connected to a pipe and no file provided
+    // exit if not connected to a pipe and no file is provided
     if (opt.path == "" && !fillw::inPipe())
     {
         std::wcerr << "Pipe text into this program or specify a file path." << std::endl;
@@ -237,6 +260,7 @@ int fillw::getText(const options &opt, std::wstring &text)
     {
         FILE * file;
 
+		// read from file
         if (opt.path != "")
         {
             file =  fopen(opt.path.c_str(), "r");
@@ -246,6 +270,7 @@ int fillw::getText(const options &opt, std::wstring &text)
                 return -1;
             }
         }
+		// read from pipe (=stdin)
         else
             file = stdin;
 
@@ -254,6 +279,7 @@ int fillw::getText(const options &opt, std::wstring &text)
         while(fgetws(buffer.data(), buffer.size(), file) != NULL)
             text.append(buffer.data());
 
+		// empty pipe
         if (text.length() == 0)
         {
             std::wcerr << "No text received." << std::endl;

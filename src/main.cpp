@@ -1,10 +1,11 @@
 #include "definitions.hpp"
 
-#include <algorithm>
-#include <string>
-#include <iostream>
-#include <iomanip> 
-#include <clocale>
+#include <algorithm>  // std::sort
+#include <string>  // std::wstring
+#include <sstream>  // std::wostringstream
+#include <iostream>  // std::wcout
+#include <iomanip> // std::setw
+#include <clocale>  // std::setlocale
 
 
 int main(int argc, char** argv)
@@ -14,15 +15,15 @@ int main(int argc, char** argv)
     
     std::setlocale(LC_ALL, "");
     
-    fillw::options            opt;
-    fillw::statistics        stats;
-    fillw::output_map_type  output_map;
+    fillw::options opt;
+    fillw::statistics stats;
+    fillw::output_map_type output_map;
 
     std::wostringstream sout;
     std::wstring text;
     int status;
 
-    // set options from cmd parameters
+    // set options from cmd line parameters
     fillw::setOptions(argc, argv, opt);
 
     if (opt.help_only)
@@ -31,6 +32,7 @@ int main(int argc, char** argv)
     // processing /////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+	// try reading the text and return status code
     status = fillw::getText(opt, text);
 
     // return error code
@@ -39,8 +41,11 @@ int main(int argc, char** argv)
 
     fillw::getOccurrences(text, opt, stats, sout);
 
+	// generate occurrence vector and stats
+	// only needed if not in dump mode
     if (!opt.dump)
     {
+		// get length and line count
         stats.length = text.length();
         stats.lines = fillw::getLineCount(text);
 
@@ -48,18 +53,21 @@ int main(int argc, char** argv)
         for (auto& it : stats.occurrences)
             output_map.emplace_back(it);
           
-        //// sort occurrence descending, but same number of occurrences alphabetically
+        // sort occurrence descending, but same number of occurrences alphabetically
         if (opt.sort_occur)
-            sort(output_map.begin(), output_map.end(), [](auto &a, auto &b)
-                 { return (a.second != b.second)? a.second > b.second: a.first < b.first; });
+            std::sort(output_map.begin(), output_map.end(), [](auto &a, auto &b)
+                     { return (a.second != b.second)? a.second > b.second: a.first < b.first; });
+
+		// sort alphabetically
         else
-            sort(output_map.begin(), output_map.end(), [](auto &a, auto &b) 
-                {return fillw::caseless_less(a.first, b.first);});
+            std::sort(output_map.begin(), output_map.end(), [](auto &a, auto &b) 
+                     {return fillw::caseless_less(a.first, b.first);});
     }
 
     // output /////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////
     
+	// dump and exit when in dump mode
     if (opt.dump)
     {
         std::wcout << sout.str();
@@ -74,6 +82,7 @@ int main(int argc, char** argv)
                << stats.lines        << " lines, "
                << stats.fill_count   << " fill expressions\n\n\n";
 
+	// list fill expressions
     if (output_map.size())
     {
         std::wcout << HIGHLIGHT_SEQ_OPEN << L"\nFill Expression Occurrences\n" 
