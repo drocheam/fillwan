@@ -20,7 +20,7 @@
 #if defined(_WIN32) || defined(WIN32) // Windows
     #include <io.h>  // _isatty
 #else // UNIX
-	#include <unistd.h>  // isatty
+    #include <unistd.h>  // isatty
 #endif
 
 
@@ -96,42 +96,42 @@ namespace fillw
     };
 
     
-	// type for word lists is a vector of sets. The first vector element holds all expressions with one word, 
-	// the second with two and so on. Each element is an unordered set with wstrings
-	// a set has an average constant time complexity for search, removal and insertion, 
-	// making it suitable for our purpose
-	// non-default hashing and comparator function to enable caseless comparisions
+    // type for word lists is a vector of sets. The first vector element holds all expressions with one word, 
+    // the second with two and so on. Each element is an unordered set with wstrings
+    // a set has an average constant time complexity for search, removal and insertion, 
+    // making it suitable for our purpose
+    // non-default hashing and comparator function to enable caseless comparisions
     typedef const std::vector<std::unordered_set<std::wstring, 
                                                  decltype(caseless_hash),
                                                  decltype(caseless_equal)>>     word_list_type;
-	
-	// the occurence map is an unordered map of fill expression strings and numeric counts
-	// custom hashing and comparator for caseless comparison
-	// Average constant time complexity for search, removal and insertion
-	// so searching and incrementing the count when updating the fill words should be fast
+    
+    // the occurence map is an unordered map of fill expression strings and numeric counts
+    // custom hashing and comparator for caseless comparison
+    // Average constant time complexity for search, removal and insertion
+    // so searching and incrementing the count when updating the fill words should be fast
     typedef std::unordered_map<std::wstring_view, 
                                size_t, 
                                decltype(caseless_hash),
                                decltype(caseless_equal)>                        occur_map_type;
-	
-	// output vector consists of a pair of fill expression and count
+    
+    // output vector consists of a pair of fill expression and count
     typedef std::vector<std::pair<std::wstring_view, size_t>>                   output_map_type;
 
 
     // inPipe Detection Function
-	// needed to figure out if the program should read from file/parameter or pipe
+    // needed to figure out if the program should read from file/parameter or pipe
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #if defined(_WIN32) || defined(WIN32) // Windows 
         inline auto inPipe = []() -> bool { return !_isatty(_fileno(stdin)); };
     #else  // UNIX
-		inline auto inPipe = []() -> bool { return !isatty(fileno(stdin)); };
+        inline auto inPipe = []() -> bool { return !isatty(fileno(stdin)); };
     #endif
 
     //// Structs
     ///////////////////////////////////////////////////////////////////////////////////////////////
     
-	// program options
+    // program options
     struct options
     {
         bool dump,
@@ -143,7 +143,7 @@ namespace fillw
         fillw::word_list_type *word_list;
     };
 
-	// text statistics and fill words
+    // text statistics and fill words
     struct statistics
     {
         size_t fill_count,

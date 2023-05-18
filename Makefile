@@ -6,7 +6,7 @@ CC=g++
 LD=ld
 
 CPPFLAGS= -Wall -std=c++20 -O1
-LINKFLAGS=
+LINKFLAGS= -s
 
 PREFIX=/usr/bin
 SOURCEDIR=src

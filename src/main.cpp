@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     // processing /////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-	// try reading the text and return status code
+    // try reading the text and return status code
     status = fillw::getText(opt, text);
 
     // return error code
@@ -41,11 +41,11 @@ int main(int argc, char** argv)
 
     fillw::getOccurrences(text, opt, stats, sout);
 
-	// generate occurrence vector and stats
-	// only needed if not in dump mode
+    // generate occurrence vector and stats
+    // only needed if not in dump mode
     if (!opt.dump)
     {
-		// get length and line count
+        // get length and line count
         stats.length = text.length();
         stats.lines = fillw::getLineCount(text);
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
             std::sort(output_map.begin(), output_map.end(), [](auto &a, auto &b)
                      { return (a.second != b.second)? a.second > b.second: a.first < b.first; });
 
-		// sort alphabetically
+        // sort alphabetically
         else
             std::sort(output_map.begin(), output_map.end(), [](auto &a, auto &b) 
                      {return fillw::caseless_less(a.first, b.first);});
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     // output /////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////
     
-	// dump and exit when in dump mode
+    // dump and exit when in dump mode
     if (opt.dump)
     {
         std::wcout << sout.str();
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
                << stats.lines        << " lines, "
                << stats.fill_count   << " fill expressions\n\n\n";
 
-	// list fill expressions
+    // list fill expressions
     if (output_map.size())
     {
         std::wcout << HIGHLIGHT_SEQ_OPEN << L"\nFill Expression Occurrences\n" 
