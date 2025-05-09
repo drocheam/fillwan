@@ -6,6 +6,7 @@
 #include <iostream>  // std::wcout
 #include <iomanip> // std::setw
 #include <clocale>  // std::setlocale
+#include <cstddef> // size_t
 
 
 int main(int argc, char** argv)
@@ -21,7 +22,6 @@ int main(int argc, char** argv)
 
     std::wostringstream sout;
     std::wstring text;
-    int status;
 
     // set options from cmd line parameters
     fillw::setOptions(argc, argv, opt);
@@ -33,10 +33,10 @@ int main(int argc, char** argv)
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     // try reading the text and return status code
-    status = fillw::getText(opt, text);
+    int status = fillw::getText(opt, text);
 
     // return error code
-    if (status)
+    if (status != 0)
         return status;
 
     fillw::getOccurrences(text, opt, stats, sout);
@@ -83,14 +83,14 @@ int main(int argc, char** argv)
                << stats.fill_count   << " fill expressions\n\n\n";
 
     // list fill expressions
-    if (output_map.size())
+    if (!output_map.empty())
     {
         std::wcout << HIGHLIGHT_SEQ_OPEN << L"\nFill Expression Occurrences\n" 
                    << HIGHLIGHT_SEQ_CLOSE << SEPARATOR;
 
-        for (size_t pos = 0; auto &el : output_map)
-            std::wcout << std::left  << std::setw(24) << el.first 
-                       << std::right << std::setw(5)  << el.second 
+        for (size_t pos = 0; auto &[fst, snd] : output_map)
+            std::wcout << std::left  << std::setw(24) << fst
+                       << std::right << std::setw(5)  << snd
                        << ((++pos % 3 == 0 || pos == output_map.size())? L"\n" : L"   ");
     }
     else

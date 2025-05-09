@@ -42,6 +42,12 @@ makedir:
 # Misc
 # ###################################################################
 
+run: all
+	@ $(TARGETDIR)/$(NAME)
+
+test:
+	@ ./tests/tests.sh
+
 clean: 
 	rm -f $(OBJECTS)
 	rm -f $(TARGETDIR)/$(NAME)
@@ -59,3 +65,5 @@ compress:
 decompress:
 	upx -d -qq $(TARGETDIR)/$(NAME)
 
+compiledb:
+	compiledb make

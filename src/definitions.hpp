@@ -5,12 +5,14 @@
 #include <string>  // std::wstring
 #include <string_view>  // std::wstring_view
 #include <sstream>  // std::wostringstream
+#include <cwctype> // std::towlower
 
 // other types
 #include <unordered_map>  // std::unordered_set
 #include <unordered_set>  // std::unordered_set
 #include <vector>  // std::vector
 #include <utility>  // std::pair
+#include <cstddef> // size_t
 
 // functionality
 #include <algorithm>  // std::transform, std::equal
@@ -19,8 +21,10 @@
 // needed for inPipe below
 #if defined(_WIN32) || defined(WIN32) // Windows
     #include <io.h>  // _isatty
+    #include <stdio.h>  // _fileno
 #else // UNIX
     #include <unistd.h>  // isatty
+    #include <cstdio>  // fileno
 #endif
 
 
@@ -100,12 +104,12 @@ namespace fillw
     // the second with two and so on. Each element is an unordered set with wstrings
     // a set has an average constant time complexity for search, removal and insertion, 
     // making it suitable for our purpose
-    // non-default hashing and comparator function to enable caseless comparisions
+    // non-default hashing and comparator function to enable caseless comparisons
     typedef const std::vector<std::unordered_set<std::wstring, 
                                                  decltype(caseless_hash),
                                                  decltype(caseless_equal)>>     word_list_type;
     
-    // the occurence map is an unordered map of fill expression strings and numeric counts
+    // the occurrence map is an unordered map of fill expression strings and numeric counts
     // custom hashing and comparator for caseless comparison
     // Average constant time complexity for search, removal and insertion
     // so searching and incrementing the count when updating the fill words should be fast
@@ -123,9 +127,9 @@ namespace fillw
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #if defined(_WIN32) || defined(WIN32) // Windows 
-        inline auto inPipe = []() -> bool { return !_isatty(_fileno(stdin)); };
+        inline auto inPipe = []() -> bool { return _isatty(_fileno(stdin)) == 0; };
     #else  // UNIX
-        inline auto inPipe = []() -> bool { return !isatty(fileno(stdin)); };
+        inline auto inPipe = []() -> bool { return isatty(fileno(stdin)) == 0; };
     #endif
 
     //// Structs
@@ -140,7 +144,7 @@ namespace fillw
              help_only;
         
         std::string path;
-        fillw::word_list_type *word_list;
+        word_list_type *word_list;
     };
 
     // text statistics and fill words
@@ -151,7 +155,7 @@ namespace fillw
                length,
                lines;
 
-        fillw::occur_map_type occurrences;
+        occur_map_type occurrences;
     };
 
     //// Function Prototypes
@@ -159,15 +163,15 @@ namespace fillw
     
     void getHelp();
 
-    void setOptions(int argc, char** argv, fillw::options &opt);
+    void setOptions(int argc, char** argv, options &opt);
     
     int getText(const options &opt, std::wstring &text);
     
     size_t getLineCount(std::wstring_view data);
 
     void getOccurrences(std::wstring_view data, 
-                        const fillw::options &opt,
-                        fillw::statistics &stats,
+                        const options &opt,
+                        statistics &stats,
                         std::wostringstream &sout);
 }
 

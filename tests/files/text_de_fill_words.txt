@@ -11,7 +11,7 @@ Somit sollte vor allem darauf geachtet werden, dass die nachfolgenden Wörter au
 * natürlich
 * mit größter Wahrscheinlichkeit
 
-Vor allem sollten auch die nachfolgenden Zeilen mit der Option -d ausgegeben werden:
+Vor allem sollten auch die zwei nachfolgenden leeren Zeilen mit der Option -d ausgegeben werden:
 
 
 

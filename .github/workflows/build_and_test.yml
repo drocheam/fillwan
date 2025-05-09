@@ -1,4 +1,4 @@
-name: Build Test
+name: Build And Test
 
  
 on:
@@ -42,3 +42,6 @@ jobs:
         
       - name: Build program
         run: make install PREFIX=C:/
+
+      - name: Test program
+        run: ./tests/tests.sh

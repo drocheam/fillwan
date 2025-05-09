@@ -1,0 +1,22 @@
+Make [1;31msure[0m these are colored correctly without the dot:
+
+[1;31mShould[0m
+[1;31mShould[0m.
+.[1;31mShould[0m
+.[1;31mMight[0m.
+
+These [1;31mshould[0m be not colored at all, [1;31mbecause[0m these don't count as single words:
+Should.Might
+
+Multiline expressions:
+[1;31mas a 
+matter of fact[0m
+<not colored>
+[1;31msuch
+that[0m
+
+These don't count:
+as a mat
+ter of fact
+
+

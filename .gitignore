@@ -4,6 +4,11 @@
 *.o
 *.out
 *.d
+.clangd
+
+.cache/
+compile_commands.json
 
 bin/
 obj/
+.idea/

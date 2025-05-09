@@ -8,16 +8,21 @@
 #include <string>  // std::string, std::wstring
 #include <string_view>  // std::wstring_view
 #include <sstream>  // std::wostringstream
+#include <cwctype>  // std::towlower, std::iswspace
 
 // other types
 #include <vector>  // std::vector
 #include <iostream>  // std::wcout, std::wcerr
 #include <array>  // std::array
+#include <cstddef>  // size_t
 
 // functionality
 #include <iomanip>  // std::setw
 #include <algorithm>  // std::transform, std::find_if, std::find_if_not
 #include <cstdio>  // std::fopen, std::fclose
+#include <cstdlib>  // exit
+#include <cwchar>  // fgetws
+
 
 
 void fillw::getHelp() 
@@ -40,7 +45,7 @@ void fillw::setOptions(int argc, char** argv, options &opt)
 {
     // we could use getopt.h for POSIX systems instead, but this would make it platform dependent
 
-    std::string lang, par;
+    std::string par;
 
     // default parameters
     opt.dump        = false;
@@ -87,14 +92,14 @@ void fillw::setOptions(int argc, char** argv, options &opt)
         else if (par == "--lang" || par == "-l")
         {
             // no language provided
-            if (i == size_t(args.size() - 1))
+            if (i == args.size() - 1)
             {
                 getHelp();
                 exit(2);
             }
 
             // enforce lower case
-            lang = args.at(++i);
+            std::string lang = args.at(++i);
             std::transform(lang.begin(), lang.end(), lang.begin(), 
                            [](auto c){ return std::towlower(c); });
 
@@ -137,21 +142,17 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
                            fillw::statistics &stats, std::wostringstream &sout)
 {
     using std::wstring, std::find_if, std::find_if_not, std::reverse_iterator;
-                
-    bool prem_break; // premature break, punctuation mark ends the sentence
-    bool succ;  // fill expression found in the current word iteration
 
-    size_t ws_e, start_wd, end_wd;
+    // premature break, punctuation mark ends the sentence
+    // fill expression found in the current word iteration
 
     std::vector<size_t> ws_pos;  // white space position
-    std::wstring_view word;  // fill expression
-    std::wstring word_s;  // wstring version of word above
 
     // pre-reserve for speedup. a word length of 5 is a guess
-    ws_pos.reserve(size_t(data.length()/5));
+    ws_pos.reserve(data.length() / 5);
 
     // always treat text beginning as whitespace
-    if (!std::iswspace(data.at(0)))
+    if (std::iswspace(data.at(0)) == 0)
         ws_pos.push_back(0);
 
     // find whitespace groups
@@ -164,7 +165,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
     }
 
     // always treat text ending as whitespace
-    if (!std::iswspace(data.at(data.length()-1)))
+    if (std::iswspace(data.at(data.length()-1)) == 0)
         ws_pos.push_back(data.length());
     
     // init stats
@@ -174,17 +175,18 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
     // iterate over all whitespace positions (=possible word boundaries)
     for(size_t i = 0; i < ws_pos.size()-1; i++)
     {
-        prem_break = false;  // break after next j-th iteration below
-        succ = false; // expression found
+        bool succ = false; // expression found
 
         // find next non-whitespace character. Then find next not-punctuation character
-        ws_e = std::find_if_not(data.begin()+ws_pos.at(i), data.end(), std::iswspace) - data.begin();
-        start_wd = std::find_if_not(data.begin()+ws_e, data.begin()+ws_pos.at(i+1), ::iswpunct) - data.begin();
+        size_t ws_e = std::find_if_not(data.begin() + ws_pos.at(i), data.end(), std::iswspace) - data.begin();
+        size_t start_wd = std::find_if_not(data.begin() + ws_e, data.begin() + ws_pos.at(i + 1), ::iswpunct) - data.begin();
 
         // when the found position is smaller than next whitespace position, this should be a word beginning
         // otherwise we found a group of punctuation marks between whitespaces
         if (start_wd < ws_pos.at(i+1))
         {
+            bool prem_break = false;  // break after next j-th iteration below
+
             // from this position on, search to 1., 2., ... Nth whitespace, 
             // with N being the maximum word length of a fill expression
             for(size_t j = 0; j < opt.word_list->size(); j++)
@@ -194,12 +196,12 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
                     break;
 
                 // "word"/expression goes from initial whitespace at i to the i+j-th one in the j-th iteration
-                word = data.substr(start_wd, ws_pos.at(i+j+1)-start_wd);
+                std::wstring_view word = data.substr(start_wd, ws_pos.at(i + j + 1) - start_wd);
 
                 // exclude punctuation marks at the end of the word/expression
                 auto end_it = find_if_not(reverse_iterator(word.end()), 
                                           reverse_iterator(word.begin()), ::iswpunct);
-                end_wd = word.length() - (end_it - reverse_iterator(word.end()));
+                size_t end_wd = word.length() - (end_it - reverse_iterator(word.end()));
             
                 // marks found 
                 // if the current j-th iteration fails, there is no fill expression here
@@ -216,7 +218,7 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
                     break;
 
                 // create string from string_view
-                word_s = std::wstring(word);
+                std::wstring word_s = std::wstring(word);
                 
                 // we're checking for multiple words, 
                 // in this case we need to convert all whitespaces to a normal space and join multiple ones
@@ -230,12 +232,12 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
                     word_s.erase(I, word_s.end());
                 }
 
-                auto &wn = opt.word_list->at(j);  // get fill expression set with word length of j
+                const auto & wn = opt.word_list->at(j);  // get fill expression set with word length of j
                 auto it = wn.find(word_s);  // try finding our current expression
 
                 // on first word iteration (j=0), add word count
-                // if we got this far we already excluded cases where there are only punctuation marks between whitespaces
-                // which wouldn't count as words
+                // if we got this far we already excluded cases where there are only 
+                // punctuation marks between whitespaces which wouldn't count as words
                 if (j == 0) 
                     stats.word_count++;
 
@@ -272,43 +274,46 @@ void fillw::getOccurrences(std::wstring_view data, const fillw::options &opt,
 }
 
 
+// TODO check if file names with unicode characters work correctly
 int fillw::getText(const options &opt, std::wstring &text)
 {
     // exit if not connected to a pipe and no file is provided
-    if (opt.path == "" && !fillw::inPipe())
+    if (opt.path.empty() && !fillw::inPipe())
     {
         std::wcerr << "Pipe text into this program or specify a file path." << std::endl;
         return 1;
     }
-    else
+
+    FILE * file;
+
+    // read from file
+    if (!opt.path.empty())
     {
-        FILE * file;
-
-        // read from file
-        if (opt.path != "")
+        file = fopen(opt.path.c_str(), "r");
+        if (file == nullptr)
         {
-            file =  fopen(opt.path.c_str(), "r");
-            if (file == NULL)
-            {
-                std::wcerr << "File Not Found" << std::endl;
-                return -1;
-            }
+            std::wcerr << "File not found." << std::endl;
+            return -1;
         }
-        // read from pipe (=stdin)
-        else
-            file = stdin;
+    }
+    // read from pipe (=stdin)
+    else
+        file = stdin;
 
-        // buffered read is much faster than getline etc.
-        std::array<wchar_t, 2 << 12> buffer;
-        while(fgetws(buffer.data(), buffer.size(), file) != NULL)
-            text.append(buffer.data());
+    // buffered read is much faster than getline etc.
+    std::array<wchar_t, 2 << 12> buffer{};
+    while(fgetws(buffer.data(), buffer.size(), file) != nullptr)
+        text.append(buffer.data());
 
-        // empty pipe
-        if (text.length() == 0)
-        {
-            std::wcerr << "No text received." << std::endl;
-            return 1;
-        }
+    // close file
+    if (file != stdin)
+        fclose(file);
+
+    // empty pipe
+    if (text.empty())
+    {
+        std::wcerr << "No text received." << std::endl;
+        return 1;
     }
     return 0;
 }
@@ -318,11 +323,11 @@ size_t fillw::getLineCount(std::wstring_view data)
 {
     size_t count = 0;
     
-    for(auto &c : data)
+    for(const auto &c : data)
         if (c == L'\n')
             count++;
 
     // file has always at least one line
-    return (count)? count: count + 1;
+    return (count != 0)? count: count + 1;
 }
 
