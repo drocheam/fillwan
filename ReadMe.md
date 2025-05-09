@@ -86,10 +86,24 @@ The following command instead dumps the text with the expressions highlighted:
 
 ![fillwan example with dump option](screenshots/dump_en-fs8.png)
 
+
+---
+### Encoding and Locale
+
+For implementation simplicity, all text is converted to std::wstring internally. 
+Comparisons are then performed on a lowercase version of the text, generated using your system's configured locale. 
+The internal word dictionaries include only lowercase expressions.
+
+If issues with the locale settings or text encoding occur (on Windows, std::wstring typically uses UTF-16, 
+while on Unix-like systems it often uses UTF-32), the text may need to be converted to lowercase using an external tool 
+before processing it with this application.
+
+
 ---
 ### Building Instructions
 
-Run the Makefile using ``make``.
-This program requires a compiler supporting C++20.
+There are no external dependencies.
+Build the project using the Makefile.
 
-Installation with ``sudo make install``.
+Building and installing the application on Linux can be performed by running:
+``sudo make install``.

@@ -5,6 +5,7 @@
 
 // expression list, divided by word count
 // alphabetical sorting is for convenience only and has no impact on the process
+// use lower case letters to minimize lower casing issues due to locale and encoding
 
 namespace fillw
 {
@@ -144,9 +145,9 @@ namespace fillw
             L"however",
             L"huge",
             L"hugely",
-            L"I",
-            L"I'm",
-            L"I've",
+            L"i",
+            L"i'm",
+            L"i've",
             L"imprecise",
             L"improper",
             L"inaccurate",
@@ -544,7 +545,7 @@ namespace fillw
             L"given these points",
             L"here’s the thing",
             L"here's the deal",
-            L"I might add",
+            L"i might add",
             L"in a nutshell",
             L"in a word ",
             L"in addition to",
@@ -623,7 +624,7 @@ namespace fillw
             L"all else being equal",
             L"as a final point",
             L"as far, as to ",
-            L"as I was saying",
+            L"as i was saying",
             L"at the present time",
             L"at the same time",
             L"as was stated before",
@@ -668,7 +669,7 @@ namespace fillw
         },
         {
             L"as a matter of fact",
-            L"as far as I’m concerned ",
+            L"as far as i’m concerned ",
             L"as has been noted",
             L"at this point in time",
             L"be that as it may",
@@ -678,7 +679,7 @@ namespace fillw
             L"let me be very clear",
             L"the fact of the matter",
             L"the first step is to ",
-            L"what I want to say",
+            L"what i want to say",
             L"with this fact in mind",
         }
     };
