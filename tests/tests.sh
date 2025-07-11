@@ -2,11 +2,10 @@
 
 fillwan=./bin/fillwan
 
+errors=0
+
 assert() {
-    local condition="$1"
-    if ! eval "$condition" > /dev/null ; then
-        echo "Test failure in file $0, line ${BASH_LINENO}, condition: $1" 1>&2
-    fi
+    ! eval "$1" > /dev/null && echo "Test failure in file $0, line ${BASH_LINENO}, condition: $1" 1>&2 && errors=$((errors+1))
 }
 
 # test text handling (words, characters, newlines, encoding)
@@ -51,3 +50,7 @@ assert "echo -n '' | $fillwan 2>&1 | grep 'No text received.'"
 # a file has at least one line
 assert "echo -n ' ' | $fillwan | grep '1 lines'"
 assert "echo ' ' | $fillwan | grep '1 lines'"
+
+# exit with non zero status code when errors occurred
+[[ $errors != 0 ]] && exit 1
+exit 0

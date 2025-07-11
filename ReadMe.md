@@ -91,11 +91,11 @@ The following command instead dumps the text with the expressions highlighted:
 ### Encoding and Locale
 
 For implementation simplicity, all text is converted to std::wstring internally. 
-Comparisons are then performed on a lowercase version of the text, generated using your system's configured locale. 
-The internal word dictionaries include only lowercase expressions.
+Comparisons are then performed on a lowercase version of the text, which is generated with the system's configured locale. 
+The fill expression dictionaries include only lowercase words.
 
-If issues with the locale settings or text encoding occur (on Windows, std::wstring typically uses UTF-16, 
-while on Unix-like systems it often uses UTF-32), the text may need to be converted to lowercase using an external tool 
+If issues with the locale or text encoding occur (on Windows, std::wstring uses UTF-16, 
+while on Unix-like systems it is UTF-32), the text should be converted to lowercase using an external tool 
 before processing it with this application.
 
 
@@ -103,7 +103,7 @@ before processing it with this application.
 ### Building Instructions
 
 There are no external dependencies.
-Build the project using the Makefile.
+You can compile the project with the provided Makefile.
 
 Building and installing the application on Linux can be performed by running:
 ``sudo make install``.
