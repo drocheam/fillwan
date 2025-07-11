@@ -18,7 +18,9 @@ jobs:
       - name: Build
         run: sudo make install
       
+        # Enforce tty while testing, see https://github.com/actions/runner/issues/241#issuecomment-842566950
       - name: Test
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
         run: ./tests/tests.sh
         
   build-mac:
