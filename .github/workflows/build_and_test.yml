@@ -13,10 +13,13 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Build
         run: sudo make install
+      
+      - name: Test
+        run: ./tests/tests.sh
         
   build-mac:
     runs-on: macos-latest
@@ -24,7 +27,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Build
         run: sudo make install PREFIX=/usr/local/bin
@@ -35,13 +38,11 @@ jobs:
         
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
                 
       - name: Install make
         run: choco install make
         
-      - name: Build program
+      - name: Build
         run: make install PREFIX=C:/
 
-      - name: Test program
-        run: ./tests/tests.sh
