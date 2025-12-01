@@ -13,7 +13,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         
       - name: Build
         run: sudo make install
@@ -29,7 +29,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         
       - name: Build
         run: sudo make install PREFIX=/usr/local/bin
@@ -40,7 +40,7 @@ jobs:
         
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
                 
       - name: Install make
         run: choco install make
